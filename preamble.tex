@@ -27,10 +27,12 @@
 \usepackage{pgfplots}
 \usepgfplotslibrary{dateplot}
 
+\usepackage{pifont}
+
 % Define graphics for logo
 \titlegraphic{%
   \includegraphics[height=.125\textheight]{BostonUni.png} \hfill
-  \includegraphics[height=.125\textheight]{CEL_Logo.eps}
+  %\includegraphics[height=.125\textheight]{CEL_Logo.eps}
 }
 % Setting title page to be centered, and add logos at the bottom
 \makeatletter
@@ -73,7 +75,8 @@
 \usepackage{hyperref}
 
 % Citation
-\usepackage[backend=bibtex, style=science]{biblatex}
+%\usepackage[backend=bibtex, style=science]{biblatex}
+\usepackage[backend=bibtex]{biblatex}
 % Hacky fix to citation
 \makeatletter
 \def\blx@maxline{77}

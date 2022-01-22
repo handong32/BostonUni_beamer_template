@@ -1,13 +1,16 @@
-\documentclass[10pt,xcolor=table]{beamer}
+%\documentclass[10pt,xcolor=table]{beamer}
+%\documentclass[notes=only,10pt,xcolor=table]{beamer}
+\documentclass[notes, 10pt,xcolor=table]{beamer}
 
 % Use the preamble setting
 \input{preamble.tex}
 
 % Title and logo
-\title{A Fancy Title on Extremely Specialized Research Topic}
-\subtitle{Prospectus Defense}
-\date{\today}
-\author{John Smith}
+\title{Operating System Energy-Performance Trade-offs towards System Self Optimization}
+\subtitle{Dissertation Prospectus}
+%\date{\today}
+\date{January 24, 2022}
+\author{Han Dong}
 
 % Add bibliography file
 \bibliography{reference}
@@ -31,14 +34,171 @@
 
 % Section 1
 \section{Introduction}
+
+%% TRENDS IN COMPUTING
 \begin{frame}
-  \frametitle{A plain simple one}
+  \frametitle{Trends in computing}
+  \only<1>{
   \begin{itemize}
-  \item This is a simple frame.
-  \item It has nothing but just bullet points.
+  \item Energy growth in computing.
+  \item Hardware increasingly complex, many features packed into it.
+  \item Software dedicated to run on a single node within a datacenter.
   \end{itemize}
-  You can also have things without bullet points.
+  }
+  \only<2>{
+  \begin{itemize}
+  \item Energy growth in computing.
+  \item Hardware increasingly complex, many features packed into it.
+  \item Software dedicated to run on a single node within a datacenter.
+  \end{itemize}
+  \begin{figure}
+    \includegraphics[width=0.65\textwidth]{img/energy-sw-hw-tradeoff.pdf}
+    %\caption{Two mantis on a wig.}
+  \end{figure}
+  }
 \end{frame}
+%% NOTES
+\note{
+\begin{itemize}
+    \item There are other trends, but I identify these are useful/important to consider with respect to OSes and challenges we face
+    \item Relationship between the 3 and questions to be asked in this setup
+    \item Point 3 can be exploited to make these things easier
+\end{itemize}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% ENERGY
+\begin{frame}{Energy}
+\framesubtitle{Trends in computing}
+\begin{columns}
+    \begin{column}{.5\textwidth}
+        \begin{figure}
+            \includegraphics[width=0.9\textwidth]{img/energyuse1.pdf}
+            \caption{Nicola Jones, How to stop data centres from gobbling up the world’s electricity, 9/12/2018~\cite{nature1}.}
+        \end{figure}
+    \end{column}
+    \begin{column}{.5\textwidth}
+        \begin{figure}
+            \includegraphics[width=0.9\textwidth]{img/energyuse2.pdf}
+            \caption{Udit Gupta et al. Chasing Carbon: The Elusive Environmental Footprint of Computing, 10/28/2020~\cite{gupta2020chasing}.}
+        \end{figure}
+    \end{column}
+    \end{columns}
+\end{frame}
+\note{
+\begin{itemize}
+    \item By changing software, exploit more out of existing data center
+    \item squeezing more utilization out of existing data center budgets
+\end{itemize}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Hardware Complexity
+\begin{frame}{Hardware Complexity}
+\framesubtitle{Trends in computing}
+    \only<1>{
+    \begin{itemize}
+        \item Hardware logic has grown to accommodate more configurable features:
+        \begin{itemize}
+            \item Reflect changing application requirements.
+            \item Offload work that used to be done by software.
+        \end{itemize}
+    \end{itemize}
+    }
+    \only<2>{
+    \begin{columns}
+      \begin{column}{.4\textwidth}
+        \begin{itemize}
+        \item Hardware logic has grown to accommodate more configurable features.
+        \begin{itemize}
+            \item Reflect changing application requirements.
+            \item Offload work that used to be done by software.
+        \end{itemize}
+    \end{itemize}
+      \end{column}
+      \begin{column}{.6\textwidth}
+        \begin{figure}
+            \includegraphics[width=1.0\textwidth]{img/82599_NIC.pdf}
+            \caption{Breakdown of table of contents in Intel 82599 10 GbE NIC datasheet~\cite{82599}.}
+        \end{figure}
+      \end{column}
+    \end{columns}
+    \note{over 5000 configurable features}
+    }
+    \only<3>{
+    \begin{columns}
+      \begin{column}{.4\textwidth}
+        \begin{itemize}
+        \item Device drivers have grown in complexity to drive these features.
+        \item Effectively using these features is dependent on algorithms provided by manufacturers.
+        % \begin{itemize}
+        %     \item Software shielded away from needing to manage this sort of complexity.
+        % \end{itemize}
+    \end{itemize}
+      \end{column}
+      \begin{column}{.6\textwidth}
+        \begin{figure}
+            \includegraphics[width=1.0\textwidth]{img/devicedriverloc.pdf}
+            \caption{Lines of code measured from Linux kernel in last 10 years using SLOCCount~\cite{sloccount}.}
+        \end{figure}
+      \end{column}
+    \end{columns}
+    }
+\end{frame}
+\note{
+\begin{itemize}
+    \item Example features: security, checksum offloading, batching, packet coalescing
+    \item Some features offloaded used to be in SW
+    \item Software shielded away from needing to manage this sort of complexity.
+\end{itemize}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Software Dedication
+\begin{frame}{Software Dedication}
+\framesubtitle{Trends in computing}
+    \only<1>{
+    \begin{itemize}
+        \item Data center aggregation of all compute with massive amounts of hardware nodes:
+        \begin{itemize}
+            \item[\ding{212}] Dedication of entire nodes to meet application demand.
+        \end{itemize}
+    \end{itemize}
+    }
+    \only<2>{
+    \begin{itemize}
+        % \item Data center aggregation of all compute with massive amounts of hardware:
+        % \begin{itemize}
+        %     \item[\ding{212}] Dedication of entire nodes to meet application demand.
+        % \end{itemize}
+        % \vspace{0.5cm}
+        \item Facebook's cluster management system (\textbf{Twine}~\cite{twine}): 
+        \begin{itemize}
+            \item Elastically scale clusters of many small machines (1 CPU, 64 Gb RAM).
+            \item Applications use containers (rather than VMs) for deployment.
+            \item \textbf{Per-node customizations} such as NIC settings, kernel versions, sysctl, filesystems, etc.
+        \end{itemize}
+    \end{itemize}
+    }
+    \only<3>{
+    \begin{itemize}
+        \item In academia, renewed interest in building per-application systems~\cite{ix, mica, zygos, shenango, bmcmcd, dynsleep, 10.1145/3132747.3132764, 10.5555/2387880.2387894, segcache, stackmap, seuss, arrakis, rumpkernel, unikernels, aliraza}, such as library OSes, unikernels, kernel-bypass techniques, etc. %, mostly written using modern programming languages such as C/C++, Python, Rust, golang, etc.
+        \begin{itemize}
+            \item[\ding{212}] Mostly focused on performance, energy efficiency is a largely un-explored.
+        \end{itemize}
+    \end{itemize}
+    }
+\end{frame}
+\note{
+\begin{itemize}
+    \item 
+\end{itemize}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}
   \frametitle{Unusual layout frame}
@@ -169,4 +329,8 @@
   \centering \Large Any questions?
 \end{frame}
 
+\begin{frame}
+    \printbibliography
+\end{frame} 
+ 
 \end{document}
